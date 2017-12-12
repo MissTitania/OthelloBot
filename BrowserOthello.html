@@ -1,0 +1,126 @@
+<html>
+<style>
+.board
+{
+	width: 512px;
+	height: 512px;
+	margin: 5px;
+	border: 2px inset #010;
+	overflow: hidden;
+}
+.row
+{
+	float: left;
+}
+.space
+{
+	transition: color ease-in-out .5s;
+	width: 60px;
+	height: 60px;
+	border: 2px outset #000;
+	background-color: #0E0; 
+	float: left;
+	color: #0E0;
+}
+.space.black-occupied
+{
+	color: #000;
+}
+.space.white-occupied
+{
+	color: #FFF;
+}
+.space.black-occupied:after,
+.space.white-occupied:after
+{
+	content: "\f111";
+	display: inline-block;
+	width: 90%;
+	height: 90%;
+	border-radius: 50%;
+	float: left;
+	margin-left: 5%;
+	margin-top: 5%;
+}
+</style>
+<body>
+<div class="board">
+<div class="row"><div class="space" id="cell-0"></div><div class="space" id="cell-1"></div><div class="space" id="cell-2"></div><div class="space" id="cell-3"></div><div class="space" id="cell-4"></div><div class="space" id="cell-5"></div><div class="space" id="cell-6"></div><div class="space" id="cell-7"></div></div>
+<div class="row"><div class="space" id="cell-8"></div><div class="space" id="cell-9"></div><div class="space" id="cell-10"></div><div class="space" id="cell-11"></div><div class="space" id="cell-12"></div><div class="space" id="cell-13"></div><div class="space" id="cell-14"></div><div class="space" id="cell-15"></div></div>
+<div class="row"><div class="space" id="cell-16"></div><div class="space" id="cell-17"></div><div class="space" id="cell-18"></div><div class="space" id="cell-19"></div><div class="space" id="cell-20"></div><div class="space" id="cell-21"></div><div class="space" id="cell-22"></div><div class="space" id="cell-23"></div></div>
+<div class="row"><div class="space" id="cell-24"></div><div class="space" id="cell-25"></div><div class="space" id="cell-26"></div><div class="space" id="cell-27"></div><div class="space" id="cell-28"></div><div class="space" id="cell-29"></div><div class="space" id="cell-30"></div><div class="space" id="cell-31"></div></div>
+<div class="row"><div class="space" id="cell-32"></div><div class="space" id="cell-33"></div><div class="space" id="cell-34"></div><div class="space" id="cell-35"></div><div class="space" id="cell-36"></div><div class="space" id="cell-37"></div><div class="space" id="cell-38"></div><div class="space" id="cell-39"></div></div>
+<div class="row"><div class="space" id="cell-40"></div><div class="space" id="cell-41"></div><div class="space" id="cell-42"></div><div class="space" id="cell-43"></div><div class="space" id="cell-44"></div><div class="space" id="cell-45"></div><div class="space" id="cell-46"></div><div class="space" id="cell-47"></div></div>
+<div class="row"><div class="space" id="cell-48"></div><div class="space" id="cell-49"></div><div class="space" id="cell-50"></div><div class="space" id="cell-51"></div><div class="space" id="cell-52"></div><div class="space" id="cell-53"></div><div class="space" id="cell-54"></div><div class="space" id="cell-55"></div></div>
+<div class="row"><div class="space" id="cell-56"></div><div class="space" id="cell-57"></div><div class="space" id="cell-58"></div><div class="space" id="cell-59"></div><div class="space" id="cell-60"></div><div class="space" id="cell-61"></div><div class="space" id="cell-62"></div><div class="space" id="cell-63"></div></div>
+</div>
+<script>
+	blackPieces = 68853694464;
+	whitePieces = 34628173824;
+	state = 0;
+	legalMoves = getWhiteLegalMoves(blackPieces, whitePieces);
+	syncBoard();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
+	function syncBoard()
+	{
+		for(let i = 0; i < 64; ++i)
+		{
+			if((blackPieces & (1 << i)) > 0)
+				document.getElementById("cell-" + i).className = "space black-occupied";
+			else if((whitePieces & (1 << i)) > 0)
+				document.getElementById("cell-" + i).className = "space white-occupied";
+			else if((legalMoves & (1 << i)) > 0)
+				document.getElementById("cell-" + i).className = "space legal-move";
+			else
+				document.getElementById("cell-" + i).className = "space";
+		}
+	}
+
+/*	addMouseListener(new MouseListener()
+		{
+			public void mouseClicked(MouseEvent e)
+			{
+			}
+			public void mouseEntered(MouseEvent e)
+			{
+			}
+			public void mouseExited(MouseEvent e)
+			{
+			}
+			public void mousePressed(MouseEvent e)
+			{
+			}
+			public void mouseReleased(MouseEvent e)
+			{
+				long location = 1L << (e.getX() / 75) << (e.getY() / 75 * 8);
+				if((location & legalMoves) != 0L && state == 0)
+				{
+					whitePieces |= location;
+					long flipPieces = Board.makeWhiteMove(location, blackPieces, whitePieces);
+					blackPieces ^= flipPieces;
+					whitePieces ^= flipPieces;
+					litSquare = 0L;
+					legalMoves = Board.getBlackLegalMoves(blackPieces, whitePieces);
+					if(legalMoves == 0L)
+					{
+						legalMoves = Board.getWhiteLegalMoves(blackPieces, whitePieces);
+						if(legalMoves == 0L)
+							state = 2;
+					}
+					else
+					{
+						state = 1;
+						new Timer().schedule(new BotMoveTask(self), 200L);
+					}
+					repaint();
+				}
+			}
+		});*/
+
+	function getWhiteLegalMoves(blackPieces, whitePieces)
+	{
+
+	}
+</script>
+</body>
+</html>
