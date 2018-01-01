@@ -7,7 +7,7 @@ public class SubgameEvaluationPrecomp
 		try
 		{
 			PrintWriter writer = new PrintWriter("SubgamePrecomps.txt", "UTF-8");
-			for(int k = 1; k < 8; ++k)
+			for(int k = 1; k <= 8; ++k)
 			{
 				byte[] allMoveComps = SubgameEvaluationPrecomp.generateRowPrecompAllMoves(k);
 				byte[] legalMoveComps = SubgameEvaluationPrecomp.generateRowPrecompLegalMoves(k);
