@@ -128,10 +128,10 @@ public class TrainingMonkey
 			flipPieces = Board.makeBlackMove(move, blackBoard, whiteBoard);
 			newBlackBoard = blackBoard ^ flipPieces | move;
 			newWhiteBoard = whiteBoard ^ flipPieces;
-			if(count < 50)
-				value = valueStateWhite(5, newBlackBoard, newWhiteBoard, alpha, beta, false);
+			if(count < 49)
+				value = valueStateWhite(6, newBlackBoard, newWhiteBoard, alpha, beta, false);
 			else
-				value = valueStateWhite(13, newBlackBoard, newWhiteBoard, alpha, beta, true);
+				value = valueStateWhite(14, newBlackBoard, newWhiteBoard, alpha, beta, true);
 			if(value > bestValue)
 			{
 				alpha = value;

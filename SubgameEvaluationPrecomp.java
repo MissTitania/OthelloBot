@@ -1,5 +1,30 @@
+import java.io.PrintWriter;
+
 public class SubgameEvaluationPrecomp
 {
+	public static void main(String[] args)
+	{
+		try
+		{
+			PrintWriter writer = new PrintWriter("SubgamePrecomps.txt", "UTF-8");
+			for(int k = 1; k < 8; ++k)
+			{
+				byte[] allMoveComps = SubgameEvaluationPrecomp.generateRowPrecompAllMoves(k);
+				byte[] legalMoveComps = SubgameEvaluationPrecomp.generateRowPrecompLegalMoves(k);
+				for(int j = 0; j < allMoveComps.length; ++j)
+					writer.print(allMoveComps[j] + ",");
+				writer.println();
+				for(int j = 0; j < legalMoveComps.length; ++j)
+					writer.print(legalMoveComps[j] + ",");
+				writer.println();
+			}
+			writer.close();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 	public static byte[] generateRowPrecompAllMoves(int length)
 	{
 		byte[] results = new byte[(int) (Math.pow(3, length) + .5)];
@@ -28,7 +53,7 @@ public class SubgameEvaluationPrecomp
 			position /= 3;
 			significantBit = significantBit << 1;
 		}
-		return solvePositionBlackAll(length, blackBoard, whiteBoard);
+		return solvePositionWhiteAll(length, blackBoard, whiteBoard);
 	}
 	private static byte translatePositionLegalMoves(int length, int position)
 	{
@@ -44,7 +69,7 @@ public class SubgameEvaluationPrecomp
 			position /= 3;
 			significantBit = significantBit << 1;
 		}
-		return solvePositionBlackLegal(length, blackBoard, whiteBoard);
+		return solvePositionWhiteLegal(length, blackBoard, whiteBoard);
 	}
 	private static byte solvePositionBlackAll(int length, int blackBoard, int whiteBoard)
 	{

@@ -4,7 +4,7 @@ public class TrainingLoop
 {
 	public static void main(String[] args)
 	{
-		TrainingMonkey[] monkeys = new TrainingMonkey[16];
+		TrainingMonkey[] monkeys = new TrainingMonkey[20];
 		double[] sexiness = new double[monkeys.length];
 		for(int k = 0; k < monkeys.length; ++k)
 		{
