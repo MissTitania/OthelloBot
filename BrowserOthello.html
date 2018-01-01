@@ -14,33 +14,53 @@
 }
 .space
 {
-	transition: color ease-in-out .5s;
+	transition: background-color ease-out .32s;
 	width: 60px;
 	height: 60px;
 	border: 2px outset #000;
 	background-color: #0E0; 
 	float: left;
-	color: #0E0;
 }
-.space.black-occupied
+.space.legal-move:hover
 {
-	color: #000;
-}
-.space.white-occupied
-{
-	color: #FFF;
+	transition: background-color ease-in .32s;	
+	background-color: #0AF;
 }
 .space.black-occupied:after,
 .space.white-occupied:after
 {
-	content: "\f111";
+	transition: background-color ease-in-out .32s;
+	content: "";
 	display: inline-block;
-	width: 90%;
-	height: 90%;
+	width: 88%;
+	height: 88%;
 	border-radius: 50%;
 	float: left;
-	margin-left: 5%;
-	margin-top: 5%;
+	margin-left: 6%;
+	margin-top: 6%;
+}
+.space.black-occupied:after
+{
+	background-color: #002;
+}
+.space.white-occupied:after
+{
+	background-color: #FFF;
+}
+span
+{
+	margin: 5px;
+	font-size: 18px;
+	width: 253px;
+	display: inline-block;
+}
+#black-counter
+{
+	text-align: left;
+}
+#white-counter
+{
+	text-align: right;
 }
 </style>
 <body>
@@ -54,72 +74,314 @@
 <div class="row"><div class="space" id="cell-48"></div><div class="space" id="cell-49"></div><div class="space" id="cell-50"></div><div class="space" id="cell-51"></div><div class="space" id="cell-52"></div><div class="space" id="cell-53"></div><div class="space" id="cell-54"></div><div class="space" id="cell-55"></div></div>
 <div class="row"><div class="space" id="cell-56"></div><div class="space" id="cell-57"></div><div class="space" id="cell-58"></div><div class="space" id="cell-59"></div><div class="space" id="cell-60"></div><div class="space" id="cell-61"></div><div class="space" id="cell-62"></div><div class="space" id="cell-63"></div></div>
 </div>
+<span id="black-counter">Black:</span><span id="white-counter">White:</span>
 <script>
-	blackPieces = 68853694464;
-	whitePieces = 34628173824;
+	blackPieces = [];
+	whitePieces = [];
+	for(let i = 0; i < 64; ++i)
+	{
+		blackPieces[i] = false;
+		whitePieces[i] = false;
+	}
+	blackPieces[27] = true;
+	blackPieces[36] = true;
+	whitePieces[28] = true;
+	whitePieces[35] = true;
 	state = 0;
 	legalMoves = getWhiteLegalMoves(blackPieces, whitePieces);
-	syncBoard();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+	syncBoard();
 
 	function syncBoard()
 	{
+		let blackCount = 0;
+		let whiteCount = 0;
 		for(let i = 0; i < 64; ++i)
 		{
-			if((blackPieces & (1 << i)) > 0)
+			if(blackPieces[i])
+			{
 				document.getElementById("cell-" + i).className = "space black-occupied";
-			else if((whitePieces & (1 << i)) > 0)
+				document.getElementById("cell-" + i).onclick = function(e) {};
+				++blackCount;
+			}
+			else if(whitePieces[i])
+			{
 				document.getElementById("cell-" + i).className = "space white-occupied";
-			else if((legalMoves & (1 << i)) > 0)
+				document.getElementById("cell-" + i).onclick = function(e) {};
+				++whiteCount;
+			}
+			else if(legalMoves[i] && state == 0)
+			{
 				document.getElementById("cell-" + i).className = "space legal-move";
-			else
-				document.getElementById("cell-" + i).className = "space";
-		}
-	}
-
-/*	addMouseListener(new MouseListener()
-		{
-			public void mouseClicked(MouseEvent e)
-			{
-			}
-			public void mouseEntered(MouseEvent e)
-			{
-			}
-			public void mouseExited(MouseEvent e)
-			{
-			}
-			public void mousePressed(MouseEvent e)
-			{
-			}
-			public void mouseReleased(MouseEvent e)
-			{
-				long location = 1L << (e.getX() / 75) << (e.getY() / 75 * 8);
-				if((location & legalMoves) != 0L && state == 0)
+				document.getElementById("cell-" + i).onclick = function(e)
 				{
-					whitePieces |= location;
-					long flipPieces = Board.makeWhiteMove(location, blackPieces, whitePieces);
-					blackPieces ^= flipPieces;
-					whitePieces ^= flipPieces;
-					litSquare = 0L;
-					legalMoves = Board.getBlackLegalMoves(blackPieces, whitePieces);
-					if(legalMoves == 0L)
+					makeWhiteMove(i, blackPieces, whitePieces);
+					legalMoves = getBlackLegalMoves(blackPieces, whitePieces);
+					if(legalMoves.every(x => !x))
 					{
-						legalMoves = Board.getWhiteLegalMoves(blackPieces, whitePieces);
-						if(legalMoves == 0L)
+						legalMoves = getWhiteLegalMoves(blackPieces, whitePieces);
+						if(legalMoves.every(x => !x))
 							state = 2;
 					}
 					else
 					{
 						state = 1;
-						new Timer().schedule(new BotMoveTask(self), 200L);
+						setTimeout(botMove, 300);
 					}
-					repaint();
+					syncBoard();
+				};
+			}
+			else
+			{
+				document.getElementById("cell-" + i).className = "space";
+				document.getElementById("cell-" + i).onclick = function(e) {};
+			}
+		}
+		document.getElementById("black-counter").innerHTML = "Black: " + blackCount;
+		document.getElementById("white-counter").innerHTML = "White: " + whiteCount;
+	}
+
+	function botMove()
+	{
+		computeBlackMove();
+		legalMoves = getWhiteLegalMoves(blackPieces, whitePieces);
+		if(legalMoves.every(x => !x))
+		{
+			legalMoves = getBlackLegalMoves(blackPieces, whitePieces);
+			if(legalMoves.every(x => !x))
+				state = 2;
+			else
+				setTimeout(botMove, 300);
+		}
+		else
+			state = 0;
+		syncBoard();
+	}
+
+	function getWhiteLegalMoves(blackBoard, whiteBoard)
+	{
+		let directionShiftsX = [-1, 0, 1, -1, 1, -1, 0, 1];
+		let directionShiftsY = [-1, -1, -1, 0, 0, 1, 1, 1];
+		let newLegalMoves = [];
+		for(let i = 0; i < 64; ++i)
+			newLegalMoves[i] = false;
+		for(let position = 0; position < 64; ++position)
+		{
+			if(blackBoard[position] || whiteBoard[position])
+				continue;
+			for(let d = 0; d < 8 && !newLegalMoves[position]; ++d)
+			{
+				let x = position % 8 + directionShiftsX[d];
+				let y = Math.floor(position / 8 + .01) + directionShiftsY[d];
+				while(x >= 0 && x < 8 && y >= 0 && y < 8 && blackBoard[8 * y + x])
+				{
+					x += directionShiftsX[d];
+					y += directionShiftsY[d];
+					if(x >= 0 && x < 8 && y >= 0 && y < 8 && whiteBoard[8 * y + x])
+					{
+						newLegalMoves[position] = true;
+						break;
+					}
 				}
 			}
-		});*/
+		}
+		return newLegalMoves;
+	}
 
-	function getWhiteLegalMoves(blackPieces, whitePieces)
+	function getBlackLegalMoves(blackBoard, whiteBoard)
 	{
+		let directionShiftsX = [-1, 0, 1, -1, 1, -1, 0, 1];
+		let directionShiftsY = [-1, -1, -1, 0, 0, 1, 1, 1];
+		let newLegalMoves = [];
+		for(let i = 0; i < 64; ++i)
+			newLegalMoves[i] = false;
+		for(let position = 0; position < 64; ++position)
+		{
+			if(blackBoard[position] || whiteBoard[position])
+				continue;
+			for(let d = 0; d < 8 && !newLegalMoves[position]; ++d)
+			{
+				let x = position % 8 + directionShiftsX[d];
+				let y = Math.floor(position / 8) + directionShiftsY[d];
+				while(x >= 0 && x < 8 && y >= 0 && y < 8 && whiteBoard[8 * y + x])
+				{
+					x += directionShiftsX[d];
+					y += directionShiftsY[d];
+					if(x >= 0 && x < 8 && y >= 0 && y < 8 && blackBoard[8 * y + x])
+					{
+						newLegalMoves[position] = true;
+						break;
+					}
+				}
+			}
+		}
+		return newLegalMoves;
+	}
 
+	function makeWhiteMove(position, blackBoard, whiteBoard)
+	{
+		whiteBoard[position] = true;
+		let directionShiftsX = [-1, 0, 1, -1, 1, -1, 0, 1];
+		let directionShiftsY = [-1, -1, -1, 0, 0, 1, 1, 1];
+		for(let d = 0; d < 8; ++d)
+		{
+			let x = position % 8 + directionShiftsX[d];
+			let y = Math.floor(position / 8) + directionShiftsY[d];
+			while(x >= 0 && x < 8 && y >= 0 && y < 8 && blackBoard[8 * y + x])
+			{
+				x += directionShiftsX[d];
+				y += directionShiftsY[d];
+				if(x >= 0 && x < 8 && y >= 0 && y < 8 && whiteBoard[8 * y + x])
+				{
+					do
+					{
+						x -= directionShiftsX[d];
+						y -= directionShiftsY[d];
+						blackBoard[8 * y + x] = false;
+						whiteBoard[8 * y + x] = true;
+					}
+					while(blackBoard[8 * (y - directionShiftsY[d]) + x - directionShiftsX[d]]);
+					break;
+				}
+			}
+		}
+	}
+
+	function makeBlackMove(position, blackBoard, whiteBoard)
+	{
+		blackBoard[position] = true;
+		let directionShiftsX = [-1, 0, 1, -1, 1, -1, 0, 1];
+		let directionShiftsY = [-1, -1, -1, 0, 0, 1, 1, 1];
+		for(let d = 0; d < 8; ++d)
+		{
+			let x = position % 8 + directionShiftsX[d];
+			let y = Math.floor(position / 8) + directionShiftsY[d];
+			while(x >= 0 && x < 8 && y >= 0 && y < 8 && whiteBoard[8 * y + x])
+			{
+				x += directionShiftsX[d];
+				y += directionShiftsY[d];
+				if(x >= 0 && x < 8 && y >= 0 && y < 8 && blackBoard[8 * y + x])
+				{
+					do
+					{
+						x -= directionShiftsX[d];
+						y -= directionShiftsY[d];
+						whiteBoard[8 * y + x] = false;
+						blackBoard[8 * y + x] = true;
+					}
+					while(whiteBoard[8 * (y - directionShiftsY[d]) + x - directionShiftsX[d]]);
+					break;
+				}
+			}
+		}
+	}
+
+	function computeBlackMove()
+	{
+		let bestValue = Number.NEGATIVE_INFINITY;
+		let bestMove = -1;
+		let alpha = Number.NEGATIVE_INFINITY;
+		let beta = Number.POSITIVE_INFINITY;
+		let value, newBlackBoard, newWhiteBoard;
+		for(let move = 0; move < 64; ++move)
+		{
+			if(legalMoves[move])
+			{
+				newBlackBoard = blackPieces.slice();
+				newWhiteBoard = whitePieces.slice();
+				makeBlackMove(move, newBlackBoard, newWhiteBoard);
+				value = valueStateWhite(11, newBlackBoard, newWhiteBoard, alpha, beta);
+				if(value > bestValue)
+				{
+					alpha = value;
+					bestValue = value;
+					bestMove = move;
+				}
+				if(beta <= alpha)
+					break;
+			}
+		}
+		makeBlackMove(bestMove, blackPieces, whitePieces);
+		console.log(bestValue);
+	}
+
+	function valueStateBlack(evaluationDepth, blackBoard, whiteBoard, alpha, beta)
+	{
+		if(evaluationDepth == 0)
+			return terminalEvaluation(blackBoard, whiteBoard);
+		newLegalMoves = getBlackLegalMoves(blackBoard, whiteBoard);
+		if(newLegalMoves.every(x => !x))
+		{
+			if(getWhiteLegalMoves(blackBoard, whiteBoard).every(x => !x))
+				return terminalEvaluation(blackBoard, whiteBoard);
+			else
+				return valueStateWhite(evaluationDepth, blackBoard, whiteBoard, alpha, beta);
+		}
+		let value = Number.NEGATIVE_INFINITY;
+		let newBlackBoard, newWhiteBoard;
+		for(let move = 0; move < 64; ++move)
+		{
+			if(newLegalMoves[move])
+			{
+				newBlackBoard = blackBoard.slice();
+				newWhiteBoard = whiteBoard.slice();
+				makeBlackMove(move, newBlackBoard, newWhiteBoard);
+				value = Math.max(value, valueStateWhite(evaluationDepth - 1, newBlackBoard, newWhiteBoard, alpha, beta));	
+				alpha = Math.max(alpha, value);
+				if(beta <= alpha)
+					break;
+			}
+		}
+		return value;
+	}
+
+	function valueStateWhite(evaluationDepth, blackBoard, whiteBoard, alpha, beta)
+	{
+		if(evaluationDepth == 0)
+			return terminalEvaluation(blackBoard, whiteBoard);
+		newLegalMoves = getWhiteLegalMoves(blackBoard, whiteBoard);
+		if(newLegalMoves.every(x => !x))
+		{
+			if(getBlackLegalMoves(blackBoard, whiteBoard).every(x => !x))
+				return terminalEvaluation(blackBoard, whiteBoard);
+			else
+				return valueStateBlack(evaluationDepth, blackBoard, whiteBoard, alpha, beta);
+		}
+		let value = Number.POSITIVE_INFINITY;
+		let newBlackBoard, newWhiteBoard;
+		for(let move = 0; move < 64; ++move)
+		{
+			if(newLegalMoves[move])
+			{
+				newBlackBoard = blackBoard.slice();
+				newWhiteBoard = whiteBoard.slice();
+				makeWhiteMove(move, newBlackBoard, newWhiteBoard);
+				value = Math.min(value, valueStateBlack(evaluationDepth - 1, newBlackBoard, newWhiteBoard, alpha, beta));
+				beta = Math.min(beta, value);
+				if(beta <= alpha)
+					break;
+			}
+		}
+		return value;
+	}
+
+	function terminalEvaluation(blackBoard, whiteBoard)
+	{
+		if(blackBoard.every(x => !x))
+			return -64;
+		else if(whiteBoard.every(x => !x))
+			return 64;
+		else
+		{
+			let count = 0;
+			for(let k = 0; k < 64; ++k)
+			{
+				if(blackBoard[k])
+					++count;
+				else if(whiteBoard[k])
+					--count;
+			}
+			return count;
+		}
 	}
 </script>
 </body>
